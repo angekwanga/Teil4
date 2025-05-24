@@ -1,93 +1,107 @@
-# Übung 4
+# Übungsblatt 4
 
+Erneut verwenden wie in dieser Übung die GTFS-Daten, welche Sie im Übungs-Repository finden (https://gtfs.org/schedule/reference). Die Daten enthalten Informationen über die S- und U-Bahnlinien Berlins. In der automatischen Abgabeprüfung werden die Regionalbahnen Brandenburgs und Tramlinien Potsdams verwendet.
 
+Für mehr Informationen über die Datenstruktur schauen Sie auch in das Übungsblatt 3, welches ein Diagramm mit den verwendeten Daten und deren Relationen zueinander enthält.
 
-## Getting started
+Daten mit denen Ihre Anwendung lokal getestet werden kann finden Sie im Moodle (GTFSShort und GTFSTest).
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## a) Bahnhöfe und Umstiege
+In den Daten finden Sie in der Datei `stops.txt` und in Ihrer Network-Klasse in dem Attribut der Haltestellen (`stops`) Informationen zu allen Haltestellen im S- und U-Bahnnetz Berlins. Wenn Sie die Daten genauer anschauen sehen Sie, dass nicht jeder Bahnhof einfach als ein Eintrag in der Datei `stops.txt` erfasst ist, sondern das einzelne Gleise und Bahnhöfe selbst in der Datei vorkommen.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Bspw. finden Sie folgende Zeilen für den U-Bahnhof Amrumer Straße in den Daten aus dem Repository (Daten gekürzt):
 
-## Add your files
+|`stop_id`|`stop_name`|`location_type`|`parent_station`|
+|---|---|---|---|
+| de:11000:900009101 | U Amrumer Str. (Berlin) | 1 | *leer* |
+| de:11000:900009101::1 | U Amrumer Str. (Berlin) | 0 | de:11000:900009101 |
+| de:11000:900009101::2 | U Amrumer Str. (Berlin) | 0 | de:11000:900009101 |
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+Ist der `location_type` eines Stops auf den Wert `1` gesetzt, so handelt es sich um einen Bahnhof und der Wert im Feld `parent_station` ist leer. Besitzt der `location_type` den Wert `0`, so handelt es sich um ein einzelnes Gleis und der dazugehörige Bahnhof ist mit seiner ID im Feld `parent_station` erfasst (https://gtfs.org/documentation/schedule/reference/#stopstxt).
+
+Um effektiv Routen zwischen Bahnhöfen berechnen zu können benötigen wir eine Methode, welche alle Gleise eines Bahnhofs ermittelt, auf die wir umsteigen können. Die Funktion soll dabei so "klug" sein, dass Sie bei der Angabe einer ID eines Bahnhofs und bei der Angabe einer ID eines einzelnen Gleises einen Vector mit allen zusammengehörigen Elementen aus `stops.txt` zurückgibt.
+
+Bspw. geben die Aufrufe von folgenden Methoden immer die drei Stop-Datenstrukturen zurück, die oben in der Tabelle aufgezählt sind:
+
+```cpp
+getStopsForTransfer("de:11000:900009101") // Übergabe der ID des Bahnhofs Amrumer Str.
+getStopsForTransfer("de:11000:900009101::1") // Übergabe der ID von Gleis 1 Amrumer Str.
+getStopsForTransfer("de:11000:900009101::2") // Übergabe der ID von Gleis 2 Amrumer Str.
+```
+
+1. Erweitern Sie die Klasse `Network` um eine Methode mit der Sichtbarkeit `public` und folgender Signatur:
+```cpp
+std::vector<bht::Stop> getStopsForTransfer(const std::string& stopId)
+```
+
+2. Implementieren Sie die Methode. Als Parameter wird die ID eines Stops übergeben (die ID ist korrekt und muss nicht geprüft werden). Als Ergebnis wird ein Vector zurückgegeben, welche neben dem Stop mit der gegebenen ID auch alle anderen Haltestellen des Bahnhofs enthält.
+3. Die Methode funktioniert korrekt, wenn die ID eines Bahnhofs übergeben wird.
+4. Die Methode funktioniert korrekt, wenn die ID eines Gleises übergeben wird. 
+
+## b) Routen berechnen
+
+Die `Network`-Klasse beinhaltet alle Linien (`routes`), Fahrten (`trips`), Haltestellen (`stops`) und Haltestellen der Fahrten (`stop_times`). Ziel dieser Teilaufgabe ist es, einen **Weg** von einer Haltestelle zu einer anderen zu berechnen. In dieser Übung können Sie die Abfahrt- und Ankunftszeiten noch ignorieren. 
+
+Um eine Route berechnen zu können müssen Sie die Haltestellen und Fahrten als gerichteten Graphen interpretieren (https://de.wikipedia.org/wiki/Gerichteter_Graph). Die Haltestellen sind dabei die Knoten und die Fahrten die gerichteten Kanten, welche die Knoten miteinander verbinden. (Denken Sie daran, dass ein Knoten in Ihrem Graphen immer ein Bahnhof ist, also auch Umstiege zwischen den Gleisen möglich sind wie in Aufgabe a) implementiert.)
+
+In diesem gerichteten Graphen kann dann mittels Algorithmen wie dem Dijkstra-Algorithmus (https://de.wikipedia.org/wiki/Dijkstra-Algorithmus) oder dem A*-Algorithmus (https://de.wikipedia.org/wiki/A*-Algorithmus) der kürzeste Weg gesucht werden, um von einem Knoten zu einem anderen zu gelangen.
+
+1. Implementieren Sie eine Methode um alle benachbarten Haltestellen zu einer Haltestelle zu suchen. Zwei Haltestellen gelten als benachbart, wenn diese durch einen Fahrt (`trip`) miteinander verbunden werden. Ein Umstieg auf ein anderes Gleis soll dabei über diese Methode möglich gemacht werden, indem nicht nur die nächsten Haltestellen der Linie als Nachbarn zurückgegeben werden sondern auch mögliche andere Gleise zum Umsteigen.
+
+```cpp
+std::unordered_set<std::string> getNeighbors(const std::string& stopId)
+```
+
+2. Erweitern Sie die Klasse Network um eine Methode mit der Sichtbarkeit public und folgender Signatur:
+```cpp
+std::vector<bht::Stop> getTravelPath(const std::string& fromStopId, const std::string& toStopId)
+```
+
+3. Implementieren Sie die Methode. Als Parameter werden die IDs von zwei Haltestellen übergeben und Ihre Methode berechnet einen kürzesten Weg um von der Start-Haltestelle zur End-Haltestelle zu gelangen unter Berücksichtigung der verfügbaren Fahrten und Linien. (Sie können davon ausgehen, dass die übergebenen IDs existieren, jedoch kann es vorkommen, dass kein Weg existiert.)
+
+4. Das Ergebnis der Methode ist ein Vektor mit allen Haltestellen, die auf der Strecke durchlaufen werden.
+
+## c) Verwendung von Iteratoren
+Im Repository der Übung finden Sie die Dateien `scheduled_trip.h` und `scheduled_trip.cpp`. In dieser Klasse soll eine Fahrt gespeichert werden, deren Haltestellen mit einem Iterator durchlaufen werden können.
+Dazu ist als innere Klasse in `NetworkScheduledTrip` die Klasse `iterator` definiert, welche die erforderlichen Methoden für einen **bidirektionalen Iterator** bereitstellt.
+
+Ihre Aufgabe in dieser Teilaufgabe ist es die `Network`-Klasse zu erweitern um die Erzeugung von `NetworkScheduledTrip`-Objekten sowie die Implementierung der fehlenden Methoden aus `NetworkScheduledTrip`.
+
+1. Erweitern Sie Ihre Network-Klasse um eine `public`-Methode mit der Signatur:
+```cpp
+NetworkScheduledTrip getScheduledTrip(const std::string& tripId) const;
+```
+
+2. Die Methode erhält als Parameter die ID einer Fahrt (`trip`) und gibt als Ergebnis ein Objekt vom Typ `NetworkScheduledTrip` zurück.
+
+3. Implementieren Sie die fehlenden Methoden in `NetworkScheduledTrip` und fügen Sie ggf. eigene Attribute, Methoden, Konstruktoren hinzu, wenn Sie diese benötigen.
+
+Mit der `main()`-Methode in der Datei `main.cpp` im Repository können Sie Ihre Implementierung testen. Die Ausgabe des Programms muss wie folgt aussehen:
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.bht-berlin.de/sose-2025-ti-b15/uebung-4.git
-git branch -M main
-git push -uf origin main
+Stop 0: S Erkner Bhf
+Stop 1: S Wilhelmshagen (Berlin)
+Stop 2: S Rahnsdorf (Berlin)
 ```
 
-## Integrate with your tools
+## d) Überarbeitung des Navigationsalgorithmus (freiwillig)
+Überprüfen Sie Ihren Algorithmus aus a) ob Sie diesen mit der neuen Klasse und der Funktionalität Iteratoren verwenden zu können optimieren können.
 
-- [ ] [Set up project integrations](https://gitlab.bht-berlin.de/sose-2025-ti-b15/uebung-4/-/settings/integrations)
+## e) Lokale Tests
+Damit Sie Ihre Anwendung auch auf dem lokalen Rechner ohne das Google-Test-Framework testen können finden Sie die Datei `localtest.cpp` im Repository. Wenn Sie damit Ihre Anwendung kompilieren und auf die Daten im `GTFSTest`-Ordner aus dem Moodle anwenden können Sie ausprobieren, ob der Server Ihre Abgabe annimmt.
 
-## Collaborate with your team
+## f) Abgabe und automatische Auswertung
+Die automatische Auswertung prüft die Methoden aus den Aufgaben a) - c). Sie finden im Repository der Übungsaufgabe erneut die Datei `tester.cpp`. Diese Datei enthält wieder die Testfälle für Ihre Anwendung. Diese können Sie sich ansehen und selbst prüfen ob Ihre Anwendung diese Testfälle erfüllt. Die Tests werden mit dem Googletest-Framework realisiert (https://github.com/google/googletest).
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+Die Datei `tester.cpp` darf von Ihnen nicht verändert werden. Die Integrität der Datei wird bei der automatischen Auswertung per Prüfsumme verifiziert.
 
-## Test and Deploy
+Die folgenden Anforderungen werden in der Abgabe geprüft:
+1. Die Datei `tester.cpp` ist unverändert.
+2. Ihre Abgabe enthält wieder ein Makefile mit dem Target `autotest`, welche Die Datei `tester.cpp` mit den benötigten Quellcode-Dateien übersetzt und die Datei `test_runner` erzeugt. Der Befehl zum Übersetzen Ihrer Anwendung sollte wieder beginnen mit dem unten genannten Kommando gefolgt von Ihren C++-Quelldateien (außer denen mit der `main`-Methode und dem Qt-Fenster)
 
-Use the built-in continuous integration in GitLab.
+```bash
+g++ -I. -I/usr/local/include -std=c++17 -o test_runner /usr/local/lib/libgtest_main.a /usr/local/lib/libgtest.a <Ihre CPP-Dateien...>
+```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+3. Die Unit-Tests für die Aufgaben a) - c) können ohne Fehler ausgeführt werden.
+4. Eine Plagiatsprüfung findet keine Treffer.
