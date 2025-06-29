@@ -71,7 +71,7 @@ class NetworkScheduledTrip {
         /**
          * Return a pointer to the stop time the current iterator points to
          */
-        const StopTime* operator->();
+        const StopTime* operator->() const;
 
         /**
          * Return the referenced trip of the current stop 
