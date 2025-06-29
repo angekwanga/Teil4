@@ -11,7 +11,7 @@ BEWERTUNG: 0
 - Beschreibung: Das erforderliche Makefile muss vorhanden sein.
 - Status: ausgeführt
 - Erfolgreich: **Ja**
-- Laufzeit: 0:00:00.000042
+- Laufzeit: 0:00:00.000023
 ##### Testschritte
 - Makefile soll vorhanden sein: OK
 
@@ -21,7 +21,7 @@ BEWERTUNG: 0
 - Beschreibung: Das Makefile besitzt ein Target zum kompilieren der Tests.
 - Status: ausgeführt
 - Erfolgreich: **Ja**
-- Laufzeit: 0:00:00.000234
+- Laufzeit: 0:00:00.000166
 ##### Testschritte
 - Inhalt von Makefile prüfen: OK
 
@@ -31,7 +31,7 @@ BEWERTUNG: 0
 - Beschreibung: Die Datei tester.cpp wurde nicht verändert und ist genau so wie im Original-Repository.
 - Status: ausgeführt
 - Erfolgreich: **Ja**
-- Laufzeit: 0:00:00.000172
+- Laufzeit: 0:00:00.000102
 ##### Testschritte
 - Hash-Test von tester.cpp auf ['bb698344ebab4b0dc10373ba34d09ded7fbdf01f']: OK
 
@@ -41,7 +41,7 @@ BEWERTUNG: 0
 - Beschreibung: Mit dem Befehl `make autotest` können die Tests kompiliert werden.
 - Status: ausgeführt
 - Erfolgreich: **Nein**
-- Laufzeit: 0:00:03.240821
+- Laufzeit: 0:00:01.061634
 - Punkte: **0**
 - Return-Code / Fehlercode: `2`
 - Kommandozeile: `make autotest`
@@ -50,41 +50,189 @@ BEWERTUNG: 0
 
 ##### Ausgabe
 
-```g++ -I. -I/usr/local/include -std=c++17 -o test_runner /usr/local/lib/libgtest_main.a /usr/local/lib/libgtest.a tester.cpp csv.cpp network.cpp scheduled_trip.cpp
+```g++ -I. -I/usr/local/include -std=c++17 -Wall -Wextra -c network.cpp -o network.o
 ```
 
 ##### Fehlerausgabe
 
-```In file included from /usr/local/include/gtest/gtest.h:67,
-                 from tester.cpp:6:
-tester.cpp: In member function 'virtual void {anonymous}::Network_NetworkScheduledTrip_iterator_Test::TestBody()':
-tester.cpp:148:26: error: no matching function for call to 'distance(bht::NetworkScheduledTrip::iterator, bht::NetworkScheduledTrip::iterator)'
-  148 |   EXPECT_EQ(std::distance(trip.begin(), trip.end()), 3) << "std::distance from begin() to end() should return the number of stops in the trip";
-      |             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
-tester.cpp:148:26: note: there is 1 candidate
-In file included from /usr/local/include/c++/15.1.0/bits/stl_algobase.h:66,
-                 from /usr/local/include/c++/15.1.0/vector:64,
-                 from tester.cpp:2:
-/usr/local/include/c++/15.1.0/bits/stl_iterator_base_funcs.h:150:5: note: candidate 1: 'template<class _InputIterator> constexpr typename std::iterator_traits<_Iterator>::difference_type std::distance(_InputIterator, _InputIterator)'
-  150 |     distance(_InputIterator __first, _InputIterator __last)
-      |     ^~~~~~~~
-/usr/local/include/c++/15.1.0/bits/stl_iterator_base_funcs.h:150:5: note: template argument deduction/substitution failed:
-/usr/local/include/c++/15.1.0/bits/stl_iterator_base_funcs.h: In substitution of 'template<class _InputIterator> constexpr typename std::iterator_traits<_Iterator>::difference_type std::distance(_InputIterator, _InputIterator) [with _InputIterator = bht::NetworkScheduledTrip::iterator]':
-tester.cpp:148:3:   required from here
-  148 |   EXPECT_EQ(std::distance(trip.begin(), trip.end()), 3) << "std::distance from begin() to end() should return the number of stops in the trip";
-      |             ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
-/usr/local/include/c++/15.1.0/bits/stl_iterator_base_funcs.h:150:5: error: no type named 'difference_type' in 'struct std::iterator_traits<bht::NetworkScheduledTrip::iterator>'
-  150 |     distance(_InputIterator __first, _InputIterator __last)
-      |     ^~~~~~~~
-scheduled_trip.cpp: In member function 'unsigned int bht::NetworkScheduledTrip::iterator::getStopSequence() const':
-scheduled_trip.cpp:73:16: error: 'UINT_MAX' was not declared in this scope
-   73 |         return UINT_MAX;
-      |                ^~~~~~~~
-scheduled_trip.cpp:2:1: note: 'UINT_MAX' is defined in header '<climits>'; this is probably fixable by adding '#include <climits>'
-    1 | #include "scheduled_trip.h"
-  +++ |+#include <climits>
-    2 | #include <stdexcept>
-make: *** [Makefile:2: autotest] Error 1
+```network.cpp: In member function 'void bht::Network::readAgencies(std::string)':
+network.cpp:277:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  277 |   bht::CSVReader reader{source};
+      |        ^~~~~~~~~
+In file included from network.cpp:2:
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:279:22: error: 'reader' was not declared in this scope
+  279 |     std::string id = reader.getField("agency_id");
+      |                      ^~~~~~
+network.cpp:291:12: error: 'reader' was not declared in this scope
+  291 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:276:40: warning: unused parameter 'source' [-Wunused-parameter]
+  276 | void Network::readAgencies(std::string source) {
+      |                            ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readCalendarDates(std::string)':
+network.cpp:295:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  295 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:297:22: error: 'reader' was not declared in this scope
+  297 |     std::string id = reader.getField("service_id");
+      |                      ^~~~~~
+network.cpp:306:12: error: 'reader' was not declared in this scope
+  306 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:294:45: warning: unused parameter 'source' [-Wunused-parameter]
+  294 | void Network::readCalendarDates(std::string source) {
+      |                                 ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readCalendars(std::string)':
+network.cpp:310:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  310 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:312:22: error: 'reader' was not declared in this scope
+  312 |     std::string id = reader.getField("service_id");
+      |                      ^~~~~~
+network.cpp:328:12: error: 'reader' was not declared in this scope
+  328 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:309:41: warning: unused parameter 'source' [-Wunused-parameter]
+  309 | void Network::readCalendars(std::string source) {
+      |                             ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readLevels(std::string)':
+network.cpp:332:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  332 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:334:22: error: 'reader' was not declared in this scope
+  334 |     std::string id = reader.getField("level_id");
+      |                      ^~~~~~
+network.cpp:343:12: error: 'reader' was not declared in this scope
+  343 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:331:38: warning: unused parameter 'source' [-Wunused-parameter]
+  331 | void Network::readLevels(std::string source) {
+      |                          ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readPathways(std::string)':
+network.cpp:347:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  347 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:349:22: error: 'reader' was not declared in this scope
+  349 |     std::string id = reader.getField("pathway_id");
+      |                      ^~~~~~
+network.cpp:366:12: error: 'reader' was not declared in this scope
+  366 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:346:40: warning: unused parameter 'source' [-Wunused-parameter]
+  346 | void Network::readPathways(std::string source) {
+      |                            ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readRoutes(std::string)':
+network.cpp:370:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  370 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:372:22: error: 'reader' was not declared in this scope
+  372 |     std::string id = reader.getField("route_id");
+      |                      ^~~~~~
+network.cpp:386:12: error: 'reader' was not declared in this scope
+  386 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:369:38: warning: unused parameter 'source' [-Wunused-parameter]
+  369 | void Network::readRoutes(std::string source) {
+      |                          ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readShapes(std::string)':
+network.cpp:390:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  390 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:392:22: error: 'reader' was not declared in this scope
+  392 |     std::string id = reader.getField("shape_id");
+      |                      ^~~~~~
+network.cpp:402:12: error: 'reader' was not declared in this scope
+  402 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:389:38: warning: unused parameter 'source' [-Wunused-parameter]
+  389 | void Network::readShapes(std::string source) {
+      |                          ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readStopTimes(std::string)':
+network.cpp:406:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  406 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:408:22: error: 'reader' was not declared in this scope
+  408 |     std::string id = reader.getField("trip_id");
+      |                      ^~~~~~
+network.cpp:427:12: error: 'reader' was not declared in this scope
+  427 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:405:41: warning: unused parameter 'source' [-Wunused-parameter]
+  405 | void Network::readStopTimes(std::string source) {
+      |                             ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readStops(std::string)':
+network.cpp:431:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  431 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:433:22: error: 'reader' was not declared in this scope
+  433 |     std::string id = reader.getField("stop_id");
+      |                      ^~~~~~
+network.cpp:458:12: error: 'reader' was not declared in this scope
+  458 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:430:37: warning: unused parameter 'source' [-Wunused-parameter]
+  430 | void Network::readStops(std::string source) {
+      |                         ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readTransfers(std::string)':
+network.cpp:462:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  462 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:464:22: error: 'reader' was not declared in this scope
+  464 |     std::string id = reader.getField("from_stop_id");
+      |                      ^~~~~~
+network.cpp:478:12: error: 'reader' was not declared in this scope
+  478 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:461:41: warning: unused parameter 'source' [-Wunused-parameter]
+  461 | void Network::readTransfers(std::string source) {
+      |                             ~~~~~~~~~~~~^~~~~~
+network.cpp: In member function 'void bht::Network::readTrips(std::string)':
+network.cpp:482:8: error: 'CSVReader' is not a member of 'bht'; did you mean 'CSVReader'?
+  482 |   bht::CSVReader reader(source);
+      |        ^~~~~~~~~
+csv.h:9:7: note: 'CSVReader' declared here
+    9 | class CSVReader {
+      |       ^~~~~~~~~
+network.cpp:484:22: error: 'reader' was not declared in this scope
+  484 |     std::string id = reader.getField("trip_id");
+      |                      ^~~~~~
+network.cpp:500:12: error: 'reader' was not declared in this scope
+  500 |   } while (reader.next());
+      |            ^~~~~~
+network.cpp:481:37: warning: unused parameter 'source' [-Wunused-parameter]
+  481 | void Network::readTrips(std::string source) {
+      |                         ~~~~~~~~~~~~^~~~~~
+make: *** [Makefile:19: network.o] Error 1
 ```
 
 ## Test 5
