@@ -1,81 +1,117 @@
-# Übung 2
+# Übung 4 - Objektorientierte Programmierung
 
-Nachdem Sie die Daten zum Streckennetz im GTFS-Format verarbeiten können wollen wir diese in einer graphischen Anwendung den Nutzerinnen und Nutzern zur Verfügung stellen.
-Mit dieser Übung implementieren Sie eine eigene graphische Anwendung mit Qt, erstellen im GUI-Builder des Qt-Creator das Layout, verwenden Slots um auf Nutzereingaben zu reagieren und implementieren einen einfachen Such-Algorithmus um Haltestellen im Streckennetz zu finden.
+## Structure du projet
 
-Sie benötigen dabei Ihre Ergebnisse aus Übung 1 um mit den Daten des Streckennetz weiter zu arbeiten und die vorhandenen Klassen zu erweitern.
-
-## Haltestellen suchen
-
-Alle Haltestellen sind in der Datei `stops.txt` definiert und in Ihrer Klasse Network nach der Umsetzung aus Übung 1 im Attribut `stops` gespeichert.
-
-Es ist guter Programmierstil, stets die graphische Oberfläche (den sog. **View**) von Klassen zur Verarbeitung der Daten (dem sog. **Model**) zu trennen. Deswegen implementieren Sie die Funktionalität für die Suche nach Haltestelle in der `Network`-Klasse.
-
-- Richten Sie wieder einen Fork für Übung 2 ein und klonen Sie das Repository auf Ihren Rechner.
-- Kopieren Sie Ihre `Network`-Klasse, die `types.h` und alle weiteren benötigten Dateien in ihr Projekt.
-- Erweitern Sie die Klasse `Network` um eine Methode `search` mit der Sichtbarkeit public, welche einen `std::string` als Parameter übergeben bekommt und einen `std::vector<Stop>` zurückgibt.
-- Implementieren Sie die Methode
-  - Übergeben wird ein Suchwort (z.B. "Hauptbahnhof") und als Ergebnis wird ein Vector mit allen Haltestellen zurückgegeben, welche das Wort "Hauptbahnhof" im Namen besitzen.
-  - **Freiwillig:** Verbessern Sie die Suche in dem bspw. auch andere Felder einer Haltestelle durchsucht werden oder die suche unabhängig von Groß- und Kleinschreibung funktioniert.
-
-## Qt-Anwendung
-
-Verwenden Sie den Qt-Creator um eine graphische Anwendung zu erstellen. Achten Sie darauf, dass Sie alle Ihre bisherigen Quellcode-Dateien zum Qt-Projekt hinzufügen, damit diese beim Übersetzungsvorgang mit qmake auch berücksichtigt werden.
-
-Erstellen Sie nun mit dem GUI-Builder im Qt-Creator ein Fenster, welches mindestens die folgenden Anforderungen erfüllt:
-
-- Ein Texteingabefeld, in dem Anwenderinnen und Anwender einen Suchbegriff eingeben können.
-- Ein Label, welches das Texteingabefeld beschriftet.
-- Eine Liste, in der die Suchergebnisse angezeigt werden.
-
-Dokumentation zu Qt:
-- https://doc.qt.io/archives/qt-4.8/index.html
-- zum Qt-Creator: https://wiki.qt.io/QtCreatorWhitepaper
-  - Texteingabefelder: https://doc.qt.io/archives/qt-4.8/qplaintextedit.html
-  - Labels: https://doc.qt.io/archives/qt-4.8/qlabel.html
-  - Listen
-    - https://doc.qt.io/archives/qt-4.8/qlistview.html, 
-    - deren Model um Daten anzuzeigen: https://doc.qt.io/archives/qt-4.8/qstringlistmodel.html 
-    - und die Qt-Klasse für eine Liste von String: https://doc.qt.io/archives/qt-4.8/qstringlistmodel.html
-    - Tutorial für Qt-Listen und Datenanzeige: https://www.bogotobogo.com/Qt/Qt5_QListView_QStringListModel_ModelView_MVC.php
-- Datentyp QString: https://doc.qt.io/archives/qt-4.8/qstring.html
-
-## Implementierung der Suche
-
-Wenn Sie im GUI-Builder mit der Gestaltung Ihres Fensters fertig sind müssen nun noch Ihr Model (die Klasse `Network`) und Ihr View (das Fenster) zusammengebracht werden.
-
-- Erweitern Sie die Klasse des Fenstern um ein Attribut, welches vom Typ `Network` ist.
-- Erzeugen Sie beim Starten der Anwendung eine Instanz Ihrer Klasse `Network` und weisen Sie diese dem angelegten Attribut zu.
-
-Anschließend müssen Sie auf Texteingaben reagieren, die Suche in Ihrem `Network` durchführen und das Ergebnis in der Liste anzeigen.
-
-- Implementieren Sie eine Methode für einen Slot für das Signal `textChanged` (https://doc.qt.io/qt-6/qplaintextedit.html#textChanged) Ihres Eingabefeldes:
-  - Lesen Sie den Text des Eingabefelds aus (https://doc.qt.io/qt-6/qplaintextedit.html#plainText-prop) 
-  - Suchen Sie nach passenden Haltestellen mit Ihrer `search`-Methode
-  - Zeigen Sie die Ergebnisse in der Liste an
-
-Hinweise zur Verwendung von Signalen und Slots in Qt finden Sie hier:
-  - Mit GUI-Builder: https://www.youtube.com/watch?v=P_uYKl5RPTk
-  - Variante ohne den GUI-Builder: https://www.youtube.com/watch?v=JakMj5XEBoc
-
-## Makefiles
-Für die Abgabe Ihrer Anwendung ist wieder ein `Makefile` erforderlich.
-1. Erzeugen Sie für Ihre Quellcode-Dateien ein `Makefile`.
-1. Fügen Sie ein Target mit dem Namen `autotest` hinzu, welches Ihre Quellcode-Dateien kompiliert für die Tests der automatischen Abgabe. Verwenden Sie als Kompilier-Befehl für das Target folgendes Kommando (setzen Sie für `<Ihre CPP-Dateien>` ihre Quellcode-Dateien ein, welche kompiliert werden müssen um die `search`-Methode der `Network`-Klasse aufzurufen - bitte beachten Sie, dass keine main()-Funktion in diesen Dateien vorhanden sein darf. Strukturieren Sie Ihre Anwendung entsprechend.):
-
-
-```bash 
-g++ -I. -I/usr/local/include -std=c++17 -o /repo/test_runner /tester.cpp /usr/local/lib/libgtest_main.a /usr/local/lib/libgtest.a <Ihre CPP-Dateien...>
+```
+Uebung04/
+├── gtfsshort/              # Dossier avec les données GTFS (à ajouter)
+│   ├── agency.txt
+│   ├── calendar.txt
+│   ├── calendar_dates.txt
+│   ├── levels.txt
+│   ├── pathways.txt
+│   ├── routes.txt
+│   ├── shapes.txt
+│   ├── stop_times.txt
+│   ├── stops.txt
+│   ├── transfers.txt
+│   └── trips.txt
+├── config.h               # Configuration (chemin GTFS)
+├── csv.h / csv.cpp        # Lecteur CSV
+├── types.h                # Définitions des structures GTFS
+├── network.h / network.cpp # Classe principale Network
+├── scheduled_trip.h / scheduled_trip.cpp # Classe pour les trajets avec itérateurs
+├── main.cpp               # Application console pour tester les itérateurs
+├── main_qt.cpp            # Point d'entrée Qt (interface graphique)
+├── mainwindow.h / mainwindow.cpp # Interface Qt
+├── mainwindow.ui          # Interface utilisateur Qt
+├── stoptimestablemodel.h / stoptimestablemodel.cpp # Modèle pour la table Qt
+├── tester.cpp             # Tests automatiques (ne pas modifier)
+├── localtest.cpp          # Tests locaux (ne pas modifier)
+├── Makefile               # Build pour les tests
+└── Uebung04.pro           # Projet Qt
 ```
 
-## Abgabe und automatische Auswertung
-Die automatische Auswertung prüft Ihre `search`-Methode. Außerdem wird Ihre grafische Oberfläche mit automatisierten Tests geprüft. Dazu wird die Anwendung mit `qmake` erstellt und ausgeführt. 
+## Compilation et tests
 
-Die folgenden Anforderungen werden in der Abgabe geprüft:
-1. Die Anwendungen kann übersetzt werden mit qmake.
-1. Die Kompilierung der Tests mit Ihrem Makefile und dem Target autotests ist möglich.
-1. Die Unit-Tests können ohne Fehler ausgeführt werden.
-1. Eine Plagiatsprüfung findet keine Treffer.
+### Tests automatiques
+```bash
+make autotest
+```
 
-## Freiwillig: Erweitern Sie die Oberfläche
-Mit Ihrer Oberfläche werden Sie auch in kommenden Übungen weiter arbeiten und diese stetig ausbauen. Erweitern Sie gerne Ihre Abgabe um zusätzliche Felder und probieren Sie andere GUI-Elemente aus.
+### Application console (test des itérateurs)
+```bash
+make main_app
+./main_app ./gtfsshort
+```
+
+### Test de l'application console
+```bash
+make test_main
+```
+
+### Application Qt (interface graphique)
+```bash
+make qt-app
+# ou directement:
+qmake Uebung04.pro
+make
+./Uebung04
+```
+
+### Nettoyage
+```bash
+make clean
+```
+
+## Applications
+
+### 1. Application console (`main.cpp`)
+Cette application teste spécifiquement les itérateurs de `NetworkScheduledTrip` :
+```cpp
+bht::Network n{argv[1]};
+bht::NetworkScheduledTrip trip = n.getScheduledTrip("230419258");
+for (bht::NetworkScheduledTrip::iterator iter = trip.begin(); iter != trip.end(); iter++) {
+  std::cout << iter->stopSequence << ": " << n.stops[iter->stopId].name << std::endl;
+}
+```
+
+Sortie attendue :
+```
+0: S Erkner Bhf
+1: S Wilhelmshagen (Berlin)
+2: S Rahnsdorf (Berlin)
+```
+
+### 2. Application Qt (`main_qt.cpp`)
+Interface graphique avec sélection de lignes, trajets et affichage des arrêts.
+
+## Fonctionnalités implémentées
+
+### Aufgabe a) - Bahnhöfe und Umstiege
+- `getStopsForTransfer()` : Trouve tous les quais d'une station pour les transferts
+
+### Aufgabe b) - Routen berechnen  
+- `getNeighbors()` : Trouve les arrêts voisins connectés
+- `getTravelPath()` : Calcule le chemin le plus court entre deux arrêts
+
+### Aufgabe c) - Verwendung von Iteratoren
+- `getScheduledTrip()` : Crée un objet NetworkScheduledTrip
+- Itérateur bidirectionnel pour parcourir les arrêts d'un trajet
+
+## Optimisations de performance
+
+Le code utilise des structures de données optimisées pour accélérer les recherches :
+- `stopTrips` : Mapping arrêt → trajets
+- `tripStops` : Mapping trajet → arrêts  
+- `tripStopTimes` : Mapping trajet → horaires
+- `stopsForTransfer` : Mapping station → arrêts de transfert
+
+## Notes importantes
+
+- Le fichier `config.h` est configuré pour chercher les données GTFS dans `./gtfsshort`
+- `main.cpp` : Version console pour tester les itérateurs (requis par l'exercice)
+- `main_qt.cpp` : Version Qt pour l'interface graphique
+- Assurez-vous d'ajouter le dossier `gtfsshort` avec tous les fichiers GTFS
+- Les fichiers `tester.cpp`, `localtest.cpp`, `types.h`, et la structure de `scheduled_trip.h` ne doivent pas être modifiés
+- La compilation nécessite C++17 et les bibliothèques Google Test pour les tests

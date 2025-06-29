@@ -12,15 +12,11 @@ namespace bht {
  * related route, stop and stop times information
  */
 class NetworkScheduledTrip {
-private:
-    std::vector<StopTime> stopTimes;
+  private:
     std::string tripId;
+    std::vector<StopTime> stopTimes;
 
-public:
-    // Constructeurs
-    NetworkScheduledTrip() = default;
-    NetworkScheduledTrip(const std::string& tripId, const std::vector<StopTime>& stopTimes);
-    
+  public:
     // Define properties for this iterator
     using iterator_category = std::bidirectional_iterator_tag;
     using difference_type   = int;
@@ -29,22 +25,30 @@ public:
     using reference         = const StopTime&;
     
     /**
+     * Constructor
+     */
+    NetworkScheduledTrip(const std::string& tripId, const std::vector<StopTime>& stopTimes);
+    
+    /**
      * Define an iterator to navigate the stops of a scheduled trip
      */
     class iterator {
-    private:
-        const std::vector<StopTime>* stopTimes;
-        size_t currentIndex;
-        std::string tripId;
+      private:
+        const NetworkScheduledTrip* trip;
+        size_t index;
         
-    public:
-        // Constructeurs
-        iterator();
-        iterator(const std::vector<StopTime>* stopTimes, size_t index, const std::string& tripId);
-        
-        // Copy constructor and assignment
-        iterator(const iterator& other) = default;
-        iterator& operator=(const iterator& other) = default;
+      public:
+        // Iterator traits
+        using iterator_category = std::bidirectional_iterator_tag;
+        using difference_type   = int;
+        using value_type        = const StopTime;
+        using pointer           = const StopTime*; 
+        using reference         = const StopTime&;
+
+        /**
+         * Constructor
+         */
+        iterator(const NetworkScheduledTrip* trip, size_t index);
 
         /**
          * Move the iterator to the next stop in this trip
@@ -98,9 +102,5 @@ public:
      */
     iterator end() const;
 };
-
-// Fonctions de comparaison globales
-bool operator==(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b);
-bool operator!=(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b);
 
 }

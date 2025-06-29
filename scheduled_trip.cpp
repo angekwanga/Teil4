@@ -1,96 +1,70 @@
 #include "scheduled_trip.h"
-#include <stdexcept>
 
 namespace bht {
 
-// Constructeur de NetworkScheduledTrip
+// NetworkScheduledTrip implementation
 NetworkScheduledTrip::NetworkScheduledTrip(const std::string& tripId, const std::vector<StopTime>& stopTimes)
-    : stopTimes(stopTimes), tripId(tripId) {
+    : tripId(tripId), stopTimes(stopTimes) {
 }
 
-// Constructeurs de l'iterator
-NetworkScheduledTrip::iterator::iterator() 
-    : stopTimes(nullptr), currentIndex(0), tripId("") {
+NetworkScheduledTrip::iterator NetworkScheduledTrip::begin() const {
+    return iterator(this, 0);
 }
 
-NetworkScheduledTrip::iterator::iterator(const std::vector<StopTime>* stopTimes, size_t index, const std::string& tripId)
-    : stopTimes(stopTimes), currentIndex(index), tripId(tripId) {
+NetworkScheduledTrip::iterator NetworkScheduledTrip::end() const {
+    return iterator(this, stopTimes.size());
 }
 
-// Opérateurs d'incrémentation
+// Iterator implementation
+NetworkScheduledTrip::iterator::iterator(const NetworkScheduledTrip* trip, size_t index)
+    : trip(trip), index(index) {
+}
+
 NetworkScheduledTrip::iterator& NetworkScheduledTrip::iterator::operator++() {
-    if (stopTimes && currentIndex < stopTimes->size()) {
-        ++currentIndex;
-    }
+    ++index;
     return *this;
 }
 
 NetworkScheduledTrip::iterator NetworkScheduledTrip::iterator::operator++(int) {
-    iterator temp = *this;
-    ++(*this);
-    return temp;
+    iterator tmp = *this;
+    ++index;
+    return tmp;
 }
 
-// Opérateurs de décrémentation
 NetworkScheduledTrip::iterator& NetworkScheduledTrip::iterator::operator--() {
-    if (currentIndex > 0) {
-        --currentIndex;
-    }
+    --index;
     return *this;
 }
 
 NetworkScheduledTrip::iterator NetworkScheduledTrip::iterator::operator--(int) {
-    iterator temp = *this;
-    --(*this);
-    return temp;
+    iterator tmp = *this;
+    --index;
+    return tmp;
 }
 
-// Opérateur de déréférencement
 const StopTime& NetworkScheduledTrip::iterator::operator*() const {
-    if (!stopTimes || currentIndex >= stopTimes->size()) {
-        throw std::out_of_range("Iterator out of range");
-    }
-    return (*stopTimes)[currentIndex];
+    return trip->stopTimes[index];
 }
 
-// Opérateur de pointeur
-const StopTime* NetworkScheduledTrip::iterator::operator->() {
-    if (!stopTimes || currentIndex >= stopTimes->size()) {
-        throw std::out_of_range("Iterator out of range");
-    }
-    return &((*stopTimes)[currentIndex]);
+const StopTime* NetworkScheduledTrip::iterator::operator->() const {
+    return &(trip->stopTimes[index]);
 }
 
-// Getter pour trip ID
 const std::string& NetworkScheduledTrip::iterator::getTripId() const {
-    return tripId;
+    return trip->tripId;
 }
 
-// Getter pour stop sequence
 unsigned int NetworkScheduledTrip::iterator::getStopSequence() const {
-    if (!stopTimes || currentIndex >= stopTimes->size()) {
-        // Retourner une valeur invalide pour indiquer la fin
-        return UINT_MAX;
+    if (index >= trip->stopTimes.size()) {
+        return static_cast<unsigned int>(-1); // Invalid sequence to indicate end
     }
-    return (*stopTimes)[currentIndex].stopSequence;
+    return trip->stopTimes[index].stopSequence;
 }
 
-// Méthodes begin et end de NetworkScheduledTrip
-NetworkScheduledTrip::iterator NetworkScheduledTrip::begin() const {
-    return iterator(&stopTimes, 0, tripId);
+bool operator==(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b) { 
+  return a.getTripId() == b.getTripId() && a.getStopSequence() == b.getStopSequence();
 }
 
-NetworkScheduledTrip::iterator NetworkScheduledTrip::end() const {
-    return iterator(&stopTimes, stopTimes.size(), tripId);
-}
-
-// Opérateurs de comparaison globaux
-bool operator==(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b) {
-    return a.getTripId() == b.getTripId() && a.getStopSequence() == b.getStopSequence();
-}
-
-bool operator!=(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b) {
-    return !(a == b);
-}
-
+bool operator!=(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b) { 
+  return !(a == b); 
 }
