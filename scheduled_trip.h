@@ -2,6 +2,8 @@
 
 #include "types.h"
 #include <iterator>
+#include <vector>
+#include <string>
 
 namespace bht {
 
@@ -10,10 +12,15 @@ namespace bht {
  * related route, stop and stop times information
  */
 class NetworkScheduledTrip {
-  private:
-    // TODO: THIS CLASS IS INCOMPLETE AND YOU NEED TO IMPLEMENT THE REQUIRED ATTRIBUTES
+private:
+    std::vector<StopTime> stopTimes;
+    std::string tripId;
 
-  public:
+public:
+    // Constructeurs
+    NetworkScheduledTrip() = default;
+    NetworkScheduledTrip(const std::string& tripId, const std::vector<StopTime>& stopTimes);
+    
     // Define properties for this iterator
     using iterator_category = std::bidirectional_iterator_tag;
     using difference_type   = int;
@@ -25,11 +32,19 @@ class NetworkScheduledTrip {
      * Define an iterator to navigate the stops of a scheduled trip
      */
     class iterator {
-      private:
-        // TODO: THIS CLASS IS INCOMPLETE AND YOU NEED TO IMPLEMENT THE REQUIRED ATTRIBUTES
+    private:
+        const std::vector<StopTime>* stopTimes;
+        size_t currentIndex;
+        std::string tripId;
         
-      public:
-        // TODO: THIS CLASS IS INCOMPLETE AND YOU NEED TO IMPLEMENT THE REQUIRED ATTRIBUTES
+    public:
+        // Constructeurs
+        iterator();
+        iterator(const std::vector<StopTime>* stopTimes, size_t index, const std::string& tripId);
+        
+        // Copy constructor and assignment
+        iterator(const iterator& other) = default;
+        iterator& operator=(const iterator& other) = default;
 
         /**
          * Move the iterator to the next stop in this trip
@@ -83,5 +98,9 @@ class NetworkScheduledTrip {
      */
     iterator end() const;
 };
+
+// Fonctions de comparaison globales
+bool operator==(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b);
+bool operator!=(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b);
 
 }
