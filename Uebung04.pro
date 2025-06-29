@@ -10,7 +10,7 @@ CONFIG += c++17
 
 SOURCES += \
     csv.cpp \
-    main.cpp \
+    main_qt.cpp \
     mainwindow.cpp \
     network.cpp \
     scheduled_trip.cpp \

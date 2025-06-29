@@ -12,7 +12,7 @@ SOURCES = network.cpp csv.cpp scheduled_trip.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Default target
-all: test_runner main_app
+all: test_runner
 
 # Compile object files
 %.o: %.cpp
@@ -34,14 +34,8 @@ main_app: $(OBJECTS) main.cpp
 test_main: main_app
 	./main_app ./gtfsshort
 
-# Qt application (optional, for GUI testing)
-qt-app:
-	qmake Uebung04.pro
-	make
-
 # Clean build files
 clean:
-	rm -f *.o test_runner main_app Uebung04 Makefile.qt
-	rm -rf *.app
+	rm -f *.o test_runner main_app
 
-.PHONY: all autotest test_main qt-app clean
+.PHONY: all autotest test_main clean

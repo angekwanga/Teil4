@@ -1,5 +1,6 @@
 #include "network.h"
 #include "scheduled_trip.h"
+#include <iostream>
 
 int main(int argc, char **argv) {
   bht::Network n{argv[1]};

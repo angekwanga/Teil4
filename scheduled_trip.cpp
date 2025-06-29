@@ -68,3 +68,5 @@ bool operator==(const NetworkScheduledTrip::iterator& a, const NetworkScheduledT
 bool operator!=(const NetworkScheduledTrip::iterator& a, const NetworkScheduledTrip::iterator& b) { 
   return !(a == b); 
 }
+
+}

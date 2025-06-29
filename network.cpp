@@ -4,6 +4,7 @@
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
+#include <iostream>
 
 namespace bht {
 
@@ -81,6 +82,7 @@ Stop Network::getStopById(std::string stopId) const {
 std::vector<StopTime> Network::searchStopTimesForTrip(std::string needle, std::string tripId) const {
     std::vector<StopTime> result;
     
+    // Use optimized multimap for faster lookup
     auto range = tripStopTimes.equal_range(tripId);
     for (auto it = range.first; it != range.second; ++it) {
         const StopTime& stopTime = it->second;
@@ -109,8 +111,8 @@ std::vector<Stop> Network::getStopsForTransfer(const std::string& stopId) const 
     const Stop& stop = stops.at(stopId);
     
     if (stop.locationType == LocationType_Station) {
-        // If it's a station, find all platforms/tracks
-        auto range = stopsForTransfer.equal_range(stopId);
+        // If it's a station, find all platforms/tracks using multimap
+        auto range = stopsForTransferMap.equal_range(stopId);
         for (auto it = range.first; it != range.second; ++it) {
             if (stops.find(it->second) != stops.end()) {
                 const Stop& childStop = stops.at(it->second);
@@ -137,8 +139,8 @@ std::vector<Stop> Network::getStopsForTransfer(const std::string& stopId) const 
                 }
             }
             
-            // Add all sibling platforms
-            auto range = stopsForTransfer.equal_range(stop.parentStation);
+            // Add all sibling platforms using multimap
+            auto range = stopsForTransferMap.equal_range(stop.parentStation);
             for (auto it = range.first; it != range.second; ++it) {
                 if (stops.find(it->second) != stops.end()) {
                     const Stop& siblingStop = stops.at(it->second);
@@ -165,12 +167,12 @@ std::vector<Stop> Network::getStopsForTransfer(const std::string& stopId) const 
 std::unordered_set<std::string> Network::getNeighbors(const std::string& stopId) const {
     std::unordered_set<std::string> neighbors;
     
-    // Get all trips that stop at this station
+    // Use optimized multimap for faster lookup
     auto tripRange = stopTrips.equal_range(stopId);
     for (auto tripIt = tripRange.first; tripIt != tripRange.second; ++tripIt) {
         const std::string& tripId = tripIt->second;
         
-        // Get all stops for this trip in order
+        // Get all stops for this trip in order using multimap
         std::vector<StopTime> tripStops;
         auto stopRange = tripStopTimes.equal_range(tripId);
         for (auto stopIt = stopRange.first; stopIt != stopRange.second; ++stopIt) {
@@ -242,7 +244,7 @@ std::vector<Stop> Network::getTravelPath(const std::string& fromStopId, const st
             return path;
         }
         
-        // Get neighbors
+        // Get neighbors using optimized method
         std::unordered_set<std::string> neighbors = getNeighbors(current);
         for (const std::string& neighbor : neighbors) {
             if (visited.find(neighbor) == visited.end()) {
@@ -260,6 +262,7 @@ std::vector<Stop> Network::getTravelPath(const std::string& fromStopId, const st
 NetworkScheduledTrip Network::getScheduledTrip(const std::string& tripId) const {
     std::vector<StopTime> tripStopTimes;
     
+    // Use optimized multimap for faster lookup
     auto range = this->tripStopTimes.equal_range(tripId);
     for (auto it = range.first; it != range.second; ++it) {
         tripStopTimes.push_back(it->second);
@@ -274,7 +277,7 @@ NetworkScheduledTrip Network::getScheduledTrip(const std::string& tripId) const 
 }
 
 void Network::readAgencies(std::string source) {
-  bht::CSVReader reader{source};
+  CSVReader reader{source};
   do {
     std::string id = reader.getField("agency_id");
     if (id.empty() == false) {
@@ -292,7 +295,7 @@ void Network::readAgencies(std::string source) {
 }
 
 void Network::readCalendarDates(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("service_id");
     if (id.empty() == false) {
@@ -307,7 +310,7 @@ void Network::readCalendarDates(std::string source) {
 }
 
 void Network::readCalendars(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("service_id");
     if (id.empty() == false) {
@@ -329,7 +332,7 @@ void Network::readCalendars(std::string source) {
 }
 
 void Network::readLevels(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("level_id");
     if (id.empty() == false) {
@@ -344,7 +347,7 @@ void Network::readLevels(std::string source) {
 }
 
 void Network::readPathways(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("pathway_id");
     if (id.empty() == false) {
@@ -367,7 +370,7 @@ void Network::readPathways(std::string source) {
 }
 
 void Network::readRoutes(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("route_id");
     if (id.empty() == false) {
@@ -387,7 +390,7 @@ void Network::readRoutes(std::string source) {
 }
 
 void Network::readShapes(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("shape_id");
     if (id.empty() == false) {
@@ -403,7 +406,7 @@ void Network::readShapes(std::string source) {
 }
 
 void Network::readStopTimes(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("trip_id");
     if (id.empty() == false) {
@@ -419,7 +422,7 @@ void Network::readStopTimes(std::string source) {
       };
       stopTimes.push_back(item);
       
-      // Build optimized data structures
+      // Build optimized data structures (as recommended by professor)
       stopTrips.insert({item.stopId, item.tripId});
       tripStops.insert({item.tripId, item.stopId});
       tripStopTimes.insert({item.tripId, item});
@@ -428,7 +431,7 @@ void Network::readStopTimes(std::string source) {
 }
 
 void Network::readStops(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("stop_id");
     if (id.empty() == false) {
@@ -448,18 +451,18 @@ void Network::readStops(std::string source) {
       };
       stops[id] = item;
       
-      // Build transfer data structures
+      // Build transfer data structures (as recommended by professor)
       if (item.locationType == LocationType_Station) {
-        stopsForTransfer.insert({id, id});
+        stopsForTransferMap.insert({id, id});
       } else if (!item.parentStation.empty()) {
-        stopsForTransfer.insert({item.parentStation, id});
+        stopsForTransferMap.insert({item.parentStation, id});
       }
     }
   } while (reader.next());
 }
 
 void Network::readTransfers(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("from_stop_id");
     if (id.empty() == false) {
@@ -479,7 +482,7 @@ void Network::readTransfers(std::string source) {
 }
 
 void Network::readTrips(std::string source) {
-  bht::CSVReader reader(source);
+  CSVReader reader(source);
   do {
     std::string id = reader.getField("trip_id");
     if (id.empty() == false) {

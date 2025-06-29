@@ -32,11 +32,11 @@ class Network {
      */
     GTFSTime parseTime(std::string input);
 
-    // Optimized data structures for faster lookups
+    // Optimized data structures for faster lookups (as recommended by professor)
     std::multimap<std::string, std::string> stopTrips; // stop_id -> trip_id
     std::multimap<std::string, std::string> tripStops; // trip_id -> stop_id
     std::multimap<std::string, StopTime> tripStopTimes; // trip_id -> StopTime
-    std::multimap<std::string, std::string> stopsForTransfer; // station_id -> stop_id
+    std::multimap<std::string, std::string> stopsForTransferMap; // station_id -> stop_id
 
   public:
     /// @brief Properties fetched from GTFS files

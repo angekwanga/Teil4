@@ -1,49 +1,112 @@
 #include "csv.h"
-#include <fstream>
-#include <sstream>
+#include <string>
 #include <iostream>
+#include <fstream>
 
-CSVReader::CSVReader(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Error: Could not open file " << filename << std::endl;
-        return;
+namespace bht {
+
+CSVReader::CSVReader(std::string path) {
+  // Try to open the input file
+  this->path = path;
+  ifs.open(path, std::ifstream::in);
+
+  // Fetch headers
+  if (ifs.good()) {
+    headers.clear();
+    std::vector<std::string> items = parseLine();
+    for (size_t index = 0; index < items.size(); index++) {
+      headers[items[index]] = index;
     }
     
-    std::string line;
-    while (std::getline(file, line)) {
-        if (!line.empty()) {
-            data.push_back(parseLine(line));
-        }
-    }
-    
-    file.close();
+    // Fetch the first line of the file
+    next();
+  }
 }
 
-const std::vector<std::vector<std::string>>& CSVReader::getData() const {
-    return data;
+CSVReader::~CSVReader() {
+  ifs.close();
+  headers.clear();
+  fields.clear();
 }
 
-std::vector<std::string> CSVReader::parseLine(const std::string& line) {
-    std::vector<std::string> result;
-    std::string field;
-    bool inQuotes = false;
-    
-    for (size_t i = 0; i < line.length(); ++i) {
-        char c = line[i];
-        
-        if (c == '"') {
-            inQuotes = !inQuotes;
-        } else if (c == ',' && !inQuotes) {
-            result.push_back(field);
-            field.clear();
-        } else {
-            field += c;
-        }
+void CSVReader::reset() {
+  ifs.seekg(0);
+
+  // Skip the first line because it contains the header
+  std::string line;
+  std::getline(ifs, line);
+
+  // Seek to next line
+  next();
+}
+
+bool CSVReader::next() {
+  // Clear input if no more lines are available
+  if (hasNext() == false) {
+    fields.clear();
+    return false;
+  }
+
+  fields = parseLine();
+  return true;
+}
+
+bool CSVReader::hasNext() {
+  return ifs.good();
+}
+
+std::string CSVReader::getField(std::string name) {
+  return getField(name, "");
+}
+
+std::string CSVReader::getField(std::string name, std::string defaultValue) {
+  if (headers.count(name) > 0) {
+    size_t index = headers.at(name);
+    return index >= fields.size() || fields[index].empty() ? defaultValue : fields[index];
+  }
+
+  return defaultValue;
+}
+
+std::vector<std::string> CSVReader::parseLine() {
+  // Fetch next line
+  std::string line;
+  std::getline(ifs, line);
+
+  // Create result container
+  std::vector<std::string> result;
+  std::string chunk;
+  char quoteCharacter = '"';
+  char delimiter = ',';
+  bool isQuoted = false;
+  size_t begin = 0; 
+  size_t n = 0;
+  
+  for (size_t index = 0; index < line.length(); index++) {
+    char c = line.at(index);
+    if (c == delimiter && isQuoted == false) {
+      // New field begins
+      result.push_back(line.substr(begin, n));
+      begin = index + 1;
+      n = 0;
     }
-    
-    // Ajouter le dernier champ
-    result.push_back(field);
-    
-    return result;
+    else if (c == quoteCharacter) {
+      isQuoted = !isQuoted;
+      if (isQuoted) {
+        begin++;
+      }
+    }
+    else if (c != '\n' && c != '\r') {
+      n++;
+    }
+  }
+
+  // Consume any remaining characters
+  if (n > 0) {
+    result.push_back(line.substr(begin, n));
+  }
+
+  return result;
+}
+
 }
