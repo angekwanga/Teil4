@@ -1,11 +1,4 @@
-Mietglieder:
-Matrikel Nr:
-Ange Fortune Kwanga Tchuisseu
-105413
-Mahsa Peyman
-104685
-
-# Übung 4 - Objektorientierte Programmierung
+Objektorientierte Programmierung
 
 ## Structure du projet
 
